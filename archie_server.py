@@ -12,26 +12,21 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    try:
-        data = request.get_json()
+    data = request.get_json()
 
-        if not data or "text" not in data:
-            return jsonify({"error": "No text provided"}), 400
+    if not data or "text" not in data:
+        return jsonify({"error": "No text provided"}), 400
 
-        user_text = data["text"]
+    user_text = data["text"]
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are ARCHIE, a friendly AI teddy bear."},
-                {"role": "user", "content": user_text}
-            ]
-        )
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are ARCHIE, a friendly AI teddy bear."},
+            {"role": "user", "content": user_text}
+        ]
+    )
 
-        reply = response.choices[0].message.content
+    reply = response.choices[0].message.content
 
-        return jsonify({"reply": reply})
-
-    except Exception as e:
-        print("ERROR:", str(e))
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"reply": reply})

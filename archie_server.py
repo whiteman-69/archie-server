@@ -1,34 +1,37 @@
 from flask import Flask, request, jsonify
 from openai import OpenAI
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = Flask(__name__)
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+@app.route("/")
+def home():
+    return "ARCHIE SERVER RUNNING"
+
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    user_text = data.get("text", "")
+    try:
+        data = request.get_json()
 
-    if not user_text:
-        return jsonify({"error": "No text provided"}), 400
+        if not data or "text" not in data:
+            return jsonify({"error": "No text provided"}), 400
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are ARCHIE, a friendly AI teddy bear."},
-            {"role": "user", "content": user_text}
-        ]
-    )
+        user_text = data["text"]
 
-    reply = response.choices[0].message.content
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are ARCHIE, a friendly AI teddy bear."},
+                {"role": "user", "content": user_text}
+            ]
+        )
 
-    return jsonify({"reply": reply})
+        reply = response.choices[0].message.content
 
+        return jsonify({"reply": reply})
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    except Exception as e:
+        print("ERROR:", str(e))
+        return jsonify({"error": str(e)}), 500
